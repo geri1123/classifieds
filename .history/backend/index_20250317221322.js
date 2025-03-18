@@ -32,8 +32,8 @@ app.use("/add", addProductRouter);
 app.use("/signup", createuser);
 app.use("/auth",loginuser);
 
-app.use("/api",addCategory);
-app.use("/api",addAttributes);
+app.use("/api",addcayegory);
+app.use("/api",addAtributes);
 app.get("/", (req, res) => {
   res.send(`Welcome to the server on port ${PORT}`);
 });

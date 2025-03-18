@@ -9,8 +9,8 @@ const loginuser=require("./routes/loginuser.js");
 const path = require('path');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
-const addCategory = require("./routes/addcategory.js"); // Fix typo: `addcayegory` → `addcategory`
-const addAttributes = require("./routes/addAttributes.js"); // Fix typo: `addAtributes` → `addAttributes`
+const addcayegory=require("./routes/addcategory.js");
+
 
 const app = express();
 const PORT = process.env.PORT || 8081;
@@ -32,8 +32,7 @@ app.use("/add", addProductRouter);
 app.use("/signup", createuser);
 app.use("/auth",loginuser);
 
-app.use("/api",addCategory);
-app.use("/api",addAttributes);
+app.use("/api",addcayegory);
 app.get("/", (req, res) => {
   res.send(`Welcome to the server on port ${PORT}`);
 });

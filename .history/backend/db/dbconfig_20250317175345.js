@@ -44,8 +44,6 @@ module.exports = db;
 //     category_id INT,
 //     name VARCHAR(50) NOT NULL,
 //     FOREIGN KEY (category_id) REFERENCES categories(id)
-// ALTER TABLE subcategories ADD COLUMN parent_id INT DEFAULT NULL;
-// ALTER TABLE subcategories ADD FOREIGN KEY (parent_id) REFERENCES subcategories(id);
 // );
 
 // -- Products table
@@ -67,9 +65,9 @@ module.exports = db;
 // CREATE TABLE attributes (
 //     id INT AUTO_INCREMENT PRIMARY KEY,
 //     name VARCHAR(50) NOT NULL,
-//    
+//     category_id INT,
 //     subcategory_id INT,
-//    
+//     FOREIGN KEY (category_id) REFERENCES categories(id),
 //     FOREIGN KEY (subcategory_id) REFERENCES subcategories(id)
 // );
 
