@@ -1,0 +1,29 @@
+const express = require("express");
+const promisePool = require("../db/dbconfig"); // Assuming promisePool is set up correctly
+
+const router = express.Router();
+
+router.post('/AddAttributes', async (req, res) => {
+    const { name, subcategory_id } = req.body;
+
+    console.log("Received request to add attribute with subcategory_id:", subcategory_id);
+
+    if (!name || !subcategory_id) {
+        return res.status(400).json({ error: "Missing name or subcategory_id" });
+    }
+
+    const insertAttributeQuery = "INSERT INTO attributes (name, subcategory_id) VALUES (?, ?)";
+
+    try {
+        const [result] = await promisePool.query(insertAttributeQuery, [name, subcategory_id]);
+        res.status(201).json({ 
+            message: 'Attribute added successfully', 
+            attributeId: result.insertId 
+        });
+    } catch (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ error: 'Error adding attribute' });
+    }
+});
+
+module.exports = router;
