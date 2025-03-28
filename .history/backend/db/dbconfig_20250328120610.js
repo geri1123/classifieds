@@ -11,7 +11,7 @@
 //    connectionLimit: 10,
 //    queueLimit: 0
 // });
-
+require("dotenv").config();
 const mysql = require("mysql2");
 
 const db = mysql.createPool({

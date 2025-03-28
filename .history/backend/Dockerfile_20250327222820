@@ -1,0 +1,18 @@
+# Use Node.js official image
+FROM node:18
+
+# Set working directory inside the container
+WORKDIR /usr/src/app
+
+# Copy package.json and install dependencies
+COPY package.json package-lock.json ./
+RUN npm install
+
+# Copy all files into the container
+COPY . .
+
+# Expose the port
+EXPOSE 8081
+
+# Start the server
+CMD ["node", "server.js"]

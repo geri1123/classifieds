@@ -1,67 +1,27 @@
-// const mysql = require("mysql2");
-
-// const isDocker = process.env.NODE_ENV === "production"; // Or check process.env.DOCKER_ENV
-
-// const db = mysql.createPool({
-//    host: isDocker ? "db" : "localhost",  // Use "db" in Docker, "localhost" outside
-//    user: process.env.DB_USER,
-//    password: process.env.DB_PASSWORD || "",
-//    database: process.env.DB_NAME,
-//    waitForConnections: true,
-//    connectionLimit: 10,
-//    queueLimit: 0
-// });
-
 const mysql = require("mysql2");
 
+// Create a connection pool
 const db = mysql.createPool({
    host: process.env.DB_HOST,
    user: process.env.DB_USER,
-   password: process.env.DB_PASSWORD,
+   password: process.env.DB_PASSWORD || "",
    database: process.env.DB_NAME,
-   port: process.env.DB_PORT,
-   waitForConnections: true,
-   connectionLimit: 10,
-   queueLimit: 0
+   waitForConnections: true, // Allows waiting for connections in the pool
+   connectionLimit: 10, // Maximum number of connections in the pool
+   queueLimit: 0 // Unlimited waiting requests (you can set a limit based on your requirements)
 });
 db.getConnection((err, connection) => {
-  if (err) {
-    console.error("Database connection failed:", err);
-  } else {
-    console.log("Connected to MySQL");
-    connection.release();
-  }
-});
-
+    if (err) {
+      console.error("Database connection failed:", err);
+    } else {
+      console.log("Connected to MySQL");
+      connection.release();
+    }
+  });
+// Use promise-based queries for async/await
 const promisePool = db.promise();
+
 module.exports = promisePool;
-
-
-
-// const mysql = require("mysql2");
-
-// // Create a connection pool
-// const db = mysql.createPool({
-//    host: process.env.DB_HOST,
-//    user: process.env.DB_USER,
-//    password: process.env.DB_PASSWORD || "",
-//    database: process.env.DB_NAME,
-//    waitForConnections: true, // Allows waiting for connections in the pool
-//    connectionLimit: 10, // Maximum number of connections in the pool
-//    queueLimit: 0 // Unlimited waiting requests (you can set a limit based on your requirements)
-// });
-// db.getConnection((err, connection) => {
-//     if (err) {
-//       console.error("Database connection failed:", err);
-//     } else {
-//       console.log("Connected to MySQL");
-//       connection.release();
-//     }
-//   });
-// // Use promise-based queries for async/await
-// const promisePool = db.promise();
-
-// module.exports = promisePool;
 
 
 // const mysql = require("mysql2");

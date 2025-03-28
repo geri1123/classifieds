@@ -1,29 +1,17 @@
-// const mysql = require("mysql2");
-
-// const isDocker = process.env.NODE_ENV === "production"; // Or check process.env.DOCKER_ENV
-
-// const db = mysql.createPool({
-//    host: isDocker ? "db" : "localhost",  // Use "db" in Docker, "localhost" outside
-//    user: process.env.DB_USER,
-//    password: process.env.DB_PASSWORD || "",
-//    database: process.env.DB_NAME,
-//    waitForConnections: true,
-//    connectionLimit: 10,
-//    queueLimit: 0
-// });
-
 const mysql = require("mysql2");
 
+const isDocker = process.env.NODE_ENV === "production"; // Or check process.env.DOCKER_ENV
+
 const db = mysql.createPool({
-   host: process.env.DB_HOST,
+   host: isDocker ? "db" : "localhost",  // Use "db" in Docker, "localhost" outside
    user: process.env.DB_USER,
-   password: process.env.DB_PASSWORD,
+   password: process.env.DB_PASSWORD || "",
    database: process.env.DB_NAME,
-   port: process.env.DB_PORT,
    waitForConnections: true,
    connectionLimit: 10,
    queueLimit: 0
 });
+
 db.getConnection((err, connection) => {
   if (err) {
     console.error("Database connection failed:", err);
