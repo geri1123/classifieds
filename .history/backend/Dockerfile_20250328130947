@@ -9,7 +9,7 @@ COPY package.json package-lock.json ./
 RUN npm install
 
 # Copy all files into the container
-COPY backend/ .
+COPY . .
 
 # Expose the port
 EXPOSE 8081
