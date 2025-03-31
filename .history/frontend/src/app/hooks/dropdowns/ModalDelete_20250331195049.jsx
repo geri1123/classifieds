@@ -1,0 +1,79 @@
+import { useState, useRef, useEffect } from "react";
+
+const ModalDelete = ({ isOpen, handleDelete, loading, onClose, children }) => {
+  const [isClosing, setIsClosing] = useState(false);
+  const modalRef = useRef(null);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 300);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsClosing(false);
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className={`fixed inset-0 z-50 bg-gray-800 bg-opacity-70 flex justify-center items-center transition-all duration-500 ${
+        isClosing ? "animate-fadeOut" : "animate-fadeIn"
+      }`}
+    >
+      <div
+        ref={modalRef}
+        className={`relative p-6 w-full max-w-md dark:bg-gray-800 bg-white rounded-lg shadow-lg transition-all ${
+          isClosing ? "animate-closeModal" : "animate-openModal"
+        }`}
+      >
+        {/* Close Button */}
+        <button
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+          onClick={handleClose}
+        >
+          ✕
+        </button>
+
+        {children}
+
+        {/* Buttons */}
+        <div className="mt-4 flex justify-end gap-3">
+          <button
+            onClick={handleClose}
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={loading}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          >
+            {loading ? "Deleting..." : "Yes, Delete"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ModalDelete;
