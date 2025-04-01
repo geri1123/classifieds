@@ -1,0 +1,709 @@
+
+
+const express = require("express");
+const db = require("../db/dbconfig");
+const router = express.Router();
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const fs = require("fs");
+const promisePool=require('../db/dbconfig')
+const { sendRegisteredEmail } = require("../services/emailService");
+// const {sendPasswordchanged ,sendRegisteredEmail }=require("../services/emailService.js");
+//
+const passport = require('passport');
+//
+const multer = require("multer");
+const path=require("path");
+const { error } = require("console");
+const verifyToken = require("../modules/verifyToken.js"); 
+
+//
+// Google Auth Routes
+router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
+
+router.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/', session: false }), 
+  async (req, res) => {
+    if (!req.user) {
+      return res.status(401).json({ error: "Authentication failed" });
+    }
+    
+    try {
+      const token = jwt.sign({ userId: req.user.user_id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+      res.clearCookie("token");
+
+      // Set the new JWT token as a cookie
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",  // Secure cookie in production
+        maxAge: 3600000, // 1 hour
+        sameSite: "Strict",
+      });
+
+      res.redirect(process.env.CORS_ORIGIN || 'http://localhost:3000');
+    } catch (err) {
+      console.error("Error generating token:", err);
+      return res.status(500).json({ error: "Server error" });
+    }
+  }
+);
+router.post("/signup-user", async (req, res) => {
+  const { username, first_name, last_name, email, password, repeatpassword, termsAccepted } = req.body;
+  let errors = {};
+
+  // Validation checks
+  if (!username) errors.username = "Please fill the username field.";
+  else if (username.length < 4) errors.username = "Username must be more than 4 characters.";
+
+  if (!first_name) errors.first_name = "Please fill the first name field.";
+  if (!last_name) errors.last_name = "Please fill the last name field.";
+  if (!email) errors.email = "Please fill the email field.";
+  if (!password) errors.password = "Please fill the password field.";
+  else if (password.length < 8) errors.password = "Password must be at least 8 characters long.";
+  if (repeatpassword !== password) errors.repeatpassword = "Passwords do not match";
+  if (!termsAccepted) {
+    errors.terms = "You must accept the terms and conditions.";
+  }
+
+  // If there are any validation errors, return them
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).json({ errors });
+  }
+
+  try {
+    // Check if email already exists
+    const [emailResults] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+    if (emailResults.length > 0) {
+      return res.status(422).json({ errors: { email: "Email already in use" } });
+    }
+
+    // Check if username already exists
+    const [usernameResults] = await db.query("SELECT * FROM users WHERE username = ?", [username]);
+    if (usernameResults.length > 0) {
+      return res.status(422).json({ errors: { username: "Username already in use" } });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert user into the database
+    const insertQuery = "INSERT INTO users (username, first_name, last_name, email, password) VALUES (?, ?, ?, ?, ?)";
+    const [result] = await db.query(insertQuery, [username.trim(), first_name, last_name, email, hashedPassword]);
+    
+    res.json({ success: true, message: "User registered successfully", username });
+  } catch (err) {
+    console.error("Error processing signup:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+// router.post("/signin", async (req, res) => {
+//     const { identifier, user_password } = req.body;
+  
+//     if (!identifier || !user_password) {
+//       return res.status(400).json({ errors: "Please fill in all fields." });
+//     }
+   
+//     const checkUserQuery = "SELECT * FROM `users` WHERE username = ? OR email = ?";
+//     db.query(checkUserQuery, [identifier, identifier], async (err, results) => {
+//       if (err || results.length === 0) {
+//         return res.status(404).json({ errors: "User not found." });
+//       }
+  
+//       const user = results[0];
+  
+//       if (!(await bcrypt.compare(user_password, user.password))) {
+//         return res.status(401).json({ errors: "Invalid  password." });
+//       }
+//       const token = jwt.sign({ userId: user.user_id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+//       // const token = jwt.sign({ userId: user.user_id }, "secret_user", { expiresIn: "1h" });
+  
+//       res.clearCookie("token"); // Ensure old token is cleared if any
+      
+//       res.cookie("token", token, {
+//         httpOnly: true,
+//         secure: process.env.NODE_ENV === "production",
+//         maxAge: 3600000, // 1 hour
+//         sameSite: "Strict",
+//       });
+  
+//       res.json({ success: true });
+//     });
+//   });
+router.post("/signin", async (req, res) => {
+  const { identifier, user_password } = req.body;
+
+  if (!identifier || !user_password) {
+    return res.status(400).json({ errors: "Please fill in all fields." });
+  }
+
+  try {
+      // Use promisePool to query the database
+      const [results] = await db.query("SELECT * FROM `users` WHERE username = ? OR email = ?", [identifier, identifier]);
+      
+      if (results.length === 0) {
+          return res.status(404).json({ errors: "User not found." });
+      }
+
+      const user = results[0];
+
+      // Compare password using bcrypt
+      if (!(await bcrypt.compare(user_password, user.password))) {
+          return res.status(401).json({ errors: "Invalid password." });
+      }
+
+      // Generate JWT token
+      const token = jwt.sign({ userId: user.user_id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+      
+      // Clear any old token
+      res.clearCookie("token");
+
+      // Set the new token as a cookie
+      res.cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",  // Secure cookie in production
+          maxAge: 3600000, // 1 hour
+          sameSite: "Strict",
+      });
+
+      res.json({ success: true });
+
+  } catch (err) {
+      console.error("Database error:", err);
+      res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+router.get("/check-auth", verifyToken, async (req, res) => {
+  const userId = req.userId;
+
+  if (!userId) {
+    return res.status(401).json({ isAuthenticated: false }); // Explicit failure if userId is missing
+  }
+
+  try {
+    // Check if the user exists in the database
+    const [results] = await db.query("SELECT * FROM users WHERE user_id = ?", [userId]);
+
+    if (results.length === 0) {
+      return res.status(401).json({ isAuthenticated: false }); // User not found, authentication failed
+    }
+
+    res.json({ isAuthenticated: true, userId: userId });
+  } catch (err) {
+    console.error("Error checking authentication:", err);
+    return res.status(500).json({ error: "Server error" }); // Internal server error
+  }
+});
+// Streamlined /user-info route
+router.get("/user-info", verifyToken, async (req, res) => {
+  const userId = req.userId;
+
+  try {
+    // Use promisePool to query the database
+    const [results] = await db.query("SELECT * FROM `users` WHERE user_id = ?", [userId]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const user = results[0];
+    delete user.user_password; // Remove sensitive information
+
+    if (user.profile_img) {
+      user.profile_img = `${process.env.SERVER_URL}/${user.profile_img}`;
+    }
+
+    res.json({ success: true, user });
+
+  } catch (err) {
+    console.error("Error fetching user info:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+// Configure Multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads/images"); 
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`); 
+  },
+});
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const fileTypes = /jpeg|jpg|png/; // Allowed file types
+    const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimeType = fileTypes.test(file.mimetype);
+
+    if (extName && mimeType) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only images (jpeg, jpg, png) are allowed"));
+    }
+  },
+});
+
+// updateProfileimg
+
+router.post("/update-profileImg", verifyToken, upload.single("profile_img"), async (req, res) => {
+  const userId = req.userId; // Extract user ID from token
+  const newProfileImgPath = req.file ? `uploads/images/${req.file.filename}` : undefined;
+
+  try {
+    // Step 1: Fetch the current profile image path
+    const [results] = await db.query("SELECT profile_img FROM `users` WHERE user_id = ?", [userId]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const currentProfileImgPath = results[0].profile_img;
+
+    // Step 2: Delete the current profile image if it exists
+    if (currentProfileImgPath) {
+      const fullCurrentProfileImgPath = path.resolve(__dirname, "..", currentProfileImgPath);
+      fs.unlink(fullCurrentProfileImgPath, (fsErr) => {
+        if (fsErr && fsErr.code !== "ENOENT") {
+          console.error("Error deleting current profile image:", fsErr);
+        } else {
+          console.log("Current profile image deleted or did not exist:", fullCurrentProfileImgPath);
+        }
+      });
+    }
+
+    // Step 3: Update the user's profile image in the database
+    await db.query("UPDATE `users` SET profile_img = ? WHERE user_id = ?", [newProfileImgPath, userId]);
+
+    res.json({ success: true, profilePicture: newProfileImgPath });
+  } catch (err) {
+    console.error("Error updating user profile:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+// //change about me 
+router.post("/update-about-me", verifyToken, async (req, res) => {
+  const userId = req.userId;
+  const { about_me } = req.body;
+
+  try {
+    // Update the "about_me" field in the database
+    const [result] = await promisePool.query("UPDATE `users` SET about_me = ? WHERE user_id = ?", [about_me, userId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "User not found or no changes made" });
+    }
+
+    res.json({ success: true, message: "About me updated successfully" });
+  } catch (err) {
+    console.error("Error updating user profile:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+
+// //update email
+router.post("/update-email", verifyToken, async (req, res) => {
+  const userId = req.userId;
+  const { email } = req.body;
+  const io = req.app.get("socketio"); // Get socket.io instance
+
+  if (!email) {
+    return res.status(400).json({ message: "Please enter an email" });
+  }
+
+  try {
+    // Check if the email already exists for another user
+    const [results] = await promisePool.query(
+      "SELECT * FROM `users` WHERE email = ? AND user_id != ?", 
+      [email, userId]
+    );
+
+    if (results.length > 0) {
+      return res.status(400).json({ error: "Email already exists." });
+    }
+
+    // Update the email in the database
+    await promisePool.query(
+      "UPDATE `users` SET email = ? WHERE user_id = ?", 
+      [email, userId]
+    );
+
+    res.json({ success: true, message: "Email updated successfully." });
+
+    // Delay notification by 10 seconds
+    setTimeout(async () => {
+      try {
+        const notificationMessage = "Your email has been successfully updated.";
+
+        // Insert notification into the database
+        await promisePool.query(
+          "INSERT INTO `notifications` (user_id, message, created_at) VALUES (?, ?,  NOW())",
+          [userId, notificationMessage, "unread"]
+        );
+
+        // Emit event via Socket.io
+        io.to(`user_${userId}`).emit("new_notification", {
+          message: notificationMessage,
+          type: "email_update",
+        });
+
+      } catch (err) {
+        console.error("Error sending notification:", err);
+      }
+    }, 10000); // 10-second delay
+
+  } catch (err) {
+    console.error("Error updating email:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+//ubdate phone nr
+router.post("/update-phone", verifyToken, async (req, res) => {
+  const userId = req.userId;
+  const { phone } = req.body;
+
+  try {
+    // Update the phone number in the database
+    await promisePool.query(
+      "UPDATE users SET phone = ? WHERE user_id = ?",
+      [phone, userId]
+    );
+
+    res.json({ success: true, message: "Phone number updated successfully." });
+
+    // Get the Socket.io instance from Express app
+    const io = req.app.get('socketio');
+
+    // Delay the notification by 10 seconds
+    setTimeout(async () => {
+      try {
+        // Insert notification into the database
+        await promisePool.query(
+          "INSERT INTO notifications (user_id, message,created_at ) VALUES (?, ?,NOW())",
+          [userId, "Your phone number has been successfully updated.", "unread"]
+        );
+
+        // Emit notification event to the user
+        io.to(`user_${userId}`).emit("new_notification", {
+          message: "Your phone number has been successfully updated.",
+        });
+
+      } catch (err) {
+        console.error("Error sending notification:", err);
+      }
+    }, 10000); // 10 seconds delay
+
+  } catch (err) {
+    console.error("Error updating phone number:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+router.post("/update-firstnamelastName", verifyToken, async (req, res) => {
+  const userId = req.userId;
+  const { first_name, last_name } = req.body;
+  const io = req.app.get("socketio"); // Get socket.io instance
+
+  if (!first_name || !last_name) {
+    return res.status(400).json({ error: "Please fill all fields" });
+  }
+
+  try {
+    // Update the first name and last name in the database
+    await promisePool.query(
+      "UPDATE `users` SET first_name = ?, last_name = ? WHERE user_id = ?",
+      [first_name, last_name, userId]
+    );
+
+    res.json({ success: true, message: "User name and last name updated successfully." });
+
+    // Schedule notification after 10 seconds
+    setTimeout(async () => {
+      try {
+        const notificationMessage = "Your first name and last name have been successfully updated.";
+
+        // Insert notification into the database
+        await promisePool.query(
+          "INSERT INTO `notifications` (user_id, message,  created_at) VALUES (?, ?,  NOW())",
+          [userId, notificationMessage, "name_update"]
+        );
+
+        // Emit real-time notification to the user
+        io.to(`user_${userId}`).emit("notification", {
+          message: notificationMessage,
+          type: "name_update",
+        });
+
+        console.log("Notification sent to database and emitted via Socket.io after 10 seconds.");
+      } catch (err) {
+        console.error("Error sending delayed notification:", err);
+      }
+    }, 5000); // 10 seconds delay
+
+  } catch (err) {
+    console.error("Error updating user:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+// //updateUsername
+
+router.post("/update-username", verifyToken, async (req, res) => {
+  const userId = req.userId;
+  const { username } = req.body;
+  const io = req.app.get("socketio"); // Get Socket.io instance
+
+  if (!username || username.trim() === "") {
+    return res.status(400).json({ error: "Username must not be empty." });
+  }
+
+  if (username.length < 4) {
+    return res.status(400).json({ error: "Username must be at least 4 characters long." });
+  }
+
+  try {
+    // Fetch current user details
+    const [userResult] = await promisePool.query(
+      "SELECT username, last_username_update, next_username_update FROM `users` WHERE user_id = ?",
+      [userId]
+    );
+
+    const currentUser = userResult[0];
+    const currentUsername = currentUser?.username;
+    const nextUsernameUpdate = currentUser?.next_username_update;
+    const currentDate = new Date();
+
+    // Restrict username changes if within the blocked period
+    if (username !== currentUsername && nextUsernameUpdate && new Date(nextUsernameUpdate) > currentDate) {
+      return res.status(400).json({
+        error: `You cannot change your username until ${new Date(nextUsernameUpdate).toLocaleString()}.`,
+      });
+    }
+
+    // Check if the username already exists
+    const [usernameResult] = await promisePool.query(
+      "SELECT * FROM `users` WHERE username = ? AND user_id != ?",
+      [username, userId]
+    );
+
+    if (usernameResult.length > 0) {
+      return res.status(400).json({ error: "Username is already in use." });
+    }
+
+    // Determine the next username change date (10 days from now)
+    const tenDaysFromNow = new Date(currentDate.getTime() + 10 * 24 * 60 * 60 * 1000);
+
+    // Update username in the database
+    await promisePool.query(
+      "UPDATE `users` SET username = ?, last_username_update = ?, next_username_update = ? WHERE user_id = ?",
+      [username, currentDate, tenDaysFromNow, userId]
+    );
+
+    res.json({
+      success: true,
+      message: "Username updated successfully.",
+      nextUsernameUpdate: tenDaysFromNow,
+    });
+
+    // Schedule the notification after 10 seconds
+    setTimeout(async () => {
+      try {
+        const notificationMessage =
+          "Your username has been changed. You cannot change it again for the next 10 days.";
+
+        // Insert notification into the database
+        await promisePool.query(
+          "INSERT INTO `notifications` (user_id, message, created_at) VALUES (?, ?, NOW())",
+          [userId, notificationMessage]
+        );
+
+        // Emit real-time notification via Socket.io
+        io.to(`user_${userId}`).emit("notification", {
+          message: notificationMessage,
+          type: "username_change",
+        });
+
+        console.log("Username change notification sent via Socket.io.");
+      } catch (notifErr) {
+        console.error("Error inserting notification:", notifErr.message);
+      }
+    }, 5000); // 5-second delay
+
+  } catch (err) {
+    console.error("Error updating username:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+
+
+
+
+
+
+
+////////////////////////////////
+
+// change password
+router.post("/change-password", verifyToken, async (req, res) => {
+  const userId = req.userId;
+  const { currentPassword, newPassword, confirmNewPassword } = req.body;
+  const io = req.app.get("socketio"); // Get Socket.io instance
+
+  if (!currentPassword || !newPassword || !confirmNewPassword) {
+    return res.status(400).json({ error: "Please fill in all fields." });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: "New password must be at least 8 characters long." });
+  }
+
+  if (newPassword === currentPassword) {
+    return res.status(400).json({ error: "New password must be different from the current password." });
+  }
+
+  if (newPassword !== confirmNewPassword) {
+    return res.status(400).json({ error: "New password and confirm password do not match." });
+  }
+
+  try {
+    // Get user data from the database using promisePool
+    const [results] = await promisePool.query(
+      "SELECT password FROM `users` WHERE user_id = ?",
+      [userId]
+    );
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const user = results[0];
+
+    // Compare the current password
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Current password is incorrect." });
+    }
+
+    // Hash the new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the password in the database
+    await promisePool.query("UPDATE `users` SET password = ? WHERE user_id = ?", [
+      hashedNewPassword,
+      userId,
+    ]);
+
+    res.json({ success: true, message: "Password updated successfully" });
+
+    // Send notification to database and emit via Socket.io
+    setTimeout(async () => {
+      try {
+        const notificationMessage = "Your password has been changed successfully.";
+
+        // Insert notification into the database
+        await promisePool.query(
+          "INSERT INTO `notifications` (user_id, message, created_at) VALUES (?, ?, NOW())",
+          [userId, notificationMessage]
+        );
+
+        // Emit real-time notification via Socket.io
+        io.to(`user_${userId}`).emit("notification", {
+          message: notificationMessage,
+          type: "password_change",
+        });
+
+        console.log("Password change notification sent via Socket.io.");
+      } catch (notifErr) {
+        console.error("Error inserting notification:", notifErr.message);
+      }
+    }, 5000); // 5-second delay
+
+  } catch (err) {
+    console.error("Error updating password:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+
+router.put("/update-social-media", verifyToken, async (req, res) => {
+  const userId = req.userId;
+  const { instagram, facebook, linkedin, fiver } = req.body; // "fiverr" in frontend, "fiver" in DB
+
+  console.log("User ID:", userId);
+  console.log("Received Data:", req.body);
+
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized: No user ID found" });
+  }
+
+  const updateQuery = `
+    UPDATE users
+    SET instagram = ?, facebook = ?, linkedin = ?, fiver = ?
+    WHERE user_id = ?
+  `;
+
+  try {
+    const [result] = await promisePool.query(updateQuery, [instagram, facebook, linkedin, fiver, userId]);
+
+    if (result.affectedRows > 0) {
+      return res.json({ message: "Social media updated successfully" });
+    } else {
+      return res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    console.error("Error updating social media:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+// notifcation with email
+
+router.post('/receiveNotification', verifyToken, async (req, res) => {
+  const userId = req.userId;
+  const { receive_notifications } = req.body;
+
+  if (typeof receive_notifications !== 'boolean') {
+    return res.status(400).json({ error: "receive_notifications must be a boolean" });
+  }
+
+  const userdb = 'UPDATE `users` SET receive_notifications = ? WHERE user_id = ?';
+
+  try {
+    // Execute the query using promisePool
+    const [result] = await promisePool.query(userdb, [receive_notifications, userId]);
+
+    if (result.affectedRows > 0) {
+      return res.json({ success: true, message: "Notification preference updated successfully" });
+    } else {
+      return res.status(404).json({ error: "User not found" });
+    }
+  } catch (err) {
+    console.error("Error updating notification:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+// router.post("/logout", (req, res) => {
+//   res.clearCookie("token");
+//   res.json({ success: true, message: "Logged out" });
+// });
+
+router.post("/logout", (req, res) => {
+  res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "strict" });
+  res.json({ success: true, message: "Logged out" });
+});
+
+
+
+module.exports = router;
