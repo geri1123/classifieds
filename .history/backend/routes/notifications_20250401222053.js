@@ -40,13 +40,31 @@ router.put("/notifications/:id/read", verifyToken, async (req, res) => {
     }
   });
  // Route to fetch notifications
+// router.get("/notifications", verifyToken, async (req, res) => {
+//     const userId = req.userId;
+  
+//     try {
+//       const [notifications] = await promisePool.query(
+//         "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC",
+//         [userId]
+//       );
+  
+//       res.json({ notifications });
+//     } catch (err) {
+//       console.error("Error fetching notifications:", err);
+//       res.status(500).json({ error: "Error fetching notifications" });
+//     }
+//   });
+
 router.get("/notifications", verifyToken, async (req, res) => {
     const userId = req.userId;
+    const { page = 1, limit = 10 } = req.query;
   
     try {
+      const offset = (page - 1) * limit;
       const [notifications] = await promisePool.query(
-        "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC",
-        [userId]
+        "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?",
+        [userId, limit, offset]
       );
   
       res.json({ notifications });
@@ -55,9 +73,6 @@ router.get("/notifications", verifyToken, async (req, res) => {
       res.status(500).json({ error: "Error fetching notifications" });
     }
   });
-
-
-  
   // Route to fetch unread notification count
 router.get("/notifications/count", verifyToken, async (req, res) => {
     const userId = req.userId;

@@ -57,7 +57,6 @@ router.get("/notifications", verifyToken, async (req, res) => {
   });
 
 
-  
   // Route to fetch unread notification count
 router.get("/notifications/count", verifyToken, async (req, res) => {
     const userId = req.userId;

@@ -40,7 +40,7 @@ export default function NotificationsPage() {
                 key={notification.id}
                 onClick={() => handleNotificationClick(notification.id)}
                 className={`p-4 cursor-pointer flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                  notification.status === "read" ? "opacity-30" : ""
+                  notification.status === "unread" ? "opacity-50" : "opacity-100"
                 }`}
               >
                 <div>
@@ -49,7 +49,7 @@ export default function NotificationsPage() {
                     {notification.message}
                   </p>
                 </div>
-                {notification.status==="unread" && (
+                {!notification.status==="read" && (
                   <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                 )}
               </li>

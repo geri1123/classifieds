@@ -65,8 +65,6 @@ export const markAsRead = createAsyncThunk(
       }
     }
   );
-// In fetchNotifications thunk
-
 // Improved socket connection setup
 export const setupNotificationSocket = () => (dispatch) => {
   // Check if we already have a socket and it's connected
@@ -136,7 +134,6 @@ const notificationSlice = createSlice({
     addNotification: (state, action) => {
       state.notifications = [action.payload, ...state.notifications];
     },
-  
     setUnreadCount: (state, action) => {
       state.unreadCount = action.payload;
     },
@@ -162,7 +159,6 @@ const notificationSlice = createSlice({
         state.loading = false;
         state.notifications = action.payload;
       })
-    
       .addCase(fetchNotifications.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
@@ -172,20 +168,7 @@ const notificationSlice = createSlice({
       })
       .addCase(fetchNotificationCount.rejected, (state, action) => {
         state.error = action.payload;
-      })
-      .addCase(markAsRead.fulfilled, (state, action) => {
-        // Mark notification as read in the state
-        state.notifications = state.notifications.map((notification) =>
-          notification.id === action.payload ? { ...notification, read: true } : notification
-        );
-  
-        // Decrement unread count (optional, since fetchNotificationCount runs)
-        state.unreadCount = Math.max(0, state.unreadCount - 1);
-      })
-      .addCase(markAsRead.rejected, (state, action) => {
-        state.error = action.payload;
       });
-      ;
   },
 });
 

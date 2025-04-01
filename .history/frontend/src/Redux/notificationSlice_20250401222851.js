@@ -17,7 +17,7 @@ const initialState = {
   error: null,
 };
 
-// Async thunk for fetching notifications
+Async thunk for fetching notifications
 export const fetchNotifications = createAsyncThunk(
   "notifications/fetchNotifications",
   async (_, { rejectWithValue }) => {

@@ -40,7 +40,7 @@ export default function NotificationsPage() {
                 key={notification.id}
                 onClick={() => handleNotificationClick(notification.id)}
                 className={`p-4 cursor-pointer flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                  notification.status === "read" ? "opacity-30" : ""
+                  notification.status === "read" ? "opacity-50" : ""
                 }`}
               >
                 <div>

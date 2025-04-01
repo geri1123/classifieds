@@ -40,13 +40,40 @@ router.put("/notifications/:id/read", verifyToken, async (req, res) => {
     }
   });
  // Route to fetch notifications
+// router.get("/notifications", verifyToken, async (req, res) => {
+//     const userId = req.userId;
+  
+//     try {
+//       const [notifications] = await promisePool.query(
+//         "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC",
+//         [userId]
+//       );
+  
+//       res.json({ notifications });
+//     } catch (err) {
+//       console.error("Error fetching notifications:", err);
+//       res.status(500).json({ error: "Error fetching notifications" });
+//     }
+//   });
+
 router.get("/notifications", verifyToken, async (req, res) => {
     const userId = req.userId;
+    const { page = 1, limit = 10 } = req.query;
+  
+    // Convert page and limit to integers
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+  
+    if (isNaN(pageNumber) || isNaN(limitNumber)) {
+      return res.status(400).json({ error: "Invalid page or limit value" });
+    }
+  
+    const offset = (pageNumber - 1) * limitNumber;
   
     try {
       const [notifications] = await promisePool.query(
-        "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC",
-        [userId]
+        "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?",
+        [userId, limitNumber, offset]
       );
   
       res.json({ notifications });
@@ -55,8 +82,6 @@ router.get("/notifications", verifyToken, async (req, res) => {
       res.status(500).json({ error: "Error fetching notifications" });
     }
   });
-
-
   
   // Route to fetch unread notification count
 router.get("/notifications/count", verifyToken, async (req, res) => {

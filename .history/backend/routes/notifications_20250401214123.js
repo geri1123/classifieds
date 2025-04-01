@@ -4,35 +4,29 @@ const router = express.Router();
 const promisePool = require("../db/dbconfig");
 const verifyToken = require("../modules/verifyToken.js");
 
-router.put("/notifications/:id/read", verifyToken, async (req, res) => {
+
+  router.put("/notifications/:id/read", verifyToken, async (req, res) => {
     const userId = req.userId;
     const notificationId = req.params.id;
-  
+    
     try {
       // Update notification status
-      const [updateResult] = await promisePool.query(
+      await promisePool.query(
         "UPDATE notifications SET status = 'read' WHERE id = ? AND user_id = ?",
         [notificationId, userId]
       );
-  
-      // Check if any rows were affected
-      if (updateResult.affectedRows === 0) {
-        return res.status(404).json({ error: "Notification not found or already read" });
-      }
-  
+      
       // Get the updated unread count
       const [unreadCountResult] = await promisePool.query(
         "SELECT COUNT(*) AS unreadCount FROM notifications WHERE user_id = ? AND status = 'unread'",
         [userId]
       );
-      const unreadCount = unreadCountResult[0]?.unreadCount || 0;
-  
+      const unreadCount = unreadCountResult[0].unreadCount;
+      
       // Emit updated count to the user's room
-      const io = req.app.get("socketio");
-      if (io) {
-        io.to(`user_${userId}`).emit("notificationCount", unreadCount);
-      }
-  
+      const io = req.app.get('socketio');
+      io.to(`user_${userId}`).emit("notificationCount", unreadCount);
+      
       res.json({ message: "Notification marked as read", unreadCount });
     } catch (err) {
       console.error("Error updating notification:", err);
@@ -57,7 +51,6 @@ router.get("/notifications", verifyToken, async (req, res) => {
   });
 
 
-  
   // Route to fetch unread notification count
 router.get("/notifications/count", verifyToken, async (req, res) => {
     const userId = req.userId;

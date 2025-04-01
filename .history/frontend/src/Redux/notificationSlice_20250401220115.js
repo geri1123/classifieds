@@ -17,7 +17,7 @@ const initialState = {
   error: null,
 };
 
-// Async thunk for fetching notifications
+Async thunk for fetching notifications
 export const fetchNotifications = createAsyncThunk(
   "notifications/fetchNotifications",
   async (_, { rejectWithValue }) => {
@@ -136,7 +136,6 @@ const notificationSlice = createSlice({
     addNotification: (state, action) => {
       state.notifications = [action.payload, ...state.notifications];
     },
-  
     setUnreadCount: (state, action) => {
       state.unreadCount = action.payload;
     },
@@ -162,7 +161,6 @@ const notificationSlice = createSlice({
         state.loading = false;
         state.notifications = action.payload;
       })
-    
       .addCase(fetchNotifications.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;

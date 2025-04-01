@@ -18,20 +18,33 @@ const initialState = {
 };
 
 // Async thunk for fetching notifications
+// export const fetchNotifications = createAsyncThunk(
+//   "notifications/fetchNotifications",
+//   async (_, { rejectWithValue }) => {
+//     try {
+//       const response = await axios.get(`${BACKEND_URL}/api/notifications`, {
+//         withCredentials: true,
+//       });
+//       return response.data.notifications;
+//     } catch (error) {
+//       return rejectWithValue(error.response?.data?.error || "Failed to fetch notifications");
+//     }
+//   }
+// );
 export const fetchNotifications = createAsyncThunk(
-  "notifications/fetchNotifications",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(`${BACKEND_URL}/api/notifications`, {
-        withCredentials: true,
-      });
-      return response.data.notifications;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.error || "Failed to fetch notifications");
+    "notifications/fetchNotifications",
+    async ({ page = 1, limit = 10 }, { rejectWithValue }) => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/api/notifications`, {
+          params: { page, limit },
+          withCredentials: true,
+        });
+        return response.data.notifications;
+      } catch (error) {
+        return rejectWithValue(error.response?.data?.error || "Failed to fetch notifications");
+      }
     }
-  }
-);
-
+  );
 // Async thunk for fetching notification count
 export const fetchNotificationCount = createAsyncThunk(
   "notifications/fetchCount",
@@ -133,10 +146,12 @@ const notificationSlice = createSlice({
     setNotifications: (state, action) => {
       state.notifications = action.payload;
     },
+    // addNotification: (state, action) => {
+    //   state.notifications = [action.payload, ...state.notifications];
+    // },
     addNotification: (state, action) => {
-      state.notifications = [action.payload, ...state.notifications];
-    },
-  
+        state.notifications = [action.payload, ...state.notifications];
+      },
     setUnreadCount: (state, action) => {
       state.unreadCount = action.payload;
     },

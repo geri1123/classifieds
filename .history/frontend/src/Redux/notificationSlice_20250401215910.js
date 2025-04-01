@@ -46,27 +46,44 @@ export const fetchNotificationCount = createAsyncThunk(
     }
   }
 );
-export const markAsRead = createAsyncThunk(
-    "notifications/markAsRead",
-    async (notificationId, { rejectWithValue, dispatch }) => {
+// export const markAsRead = createAsyncThunk(
+//     "notifications/markAsRead",
+//     async (notificationId, { rejectWithValue, dispatch }) => {
+//       try {
+//         const response = await axios.put(
+//           `${BACKEND_URL}/api/notifications/${notificationId}/read`,
+//           {},
+//           { withCredentials: true }
+//         );
+  
+//         // Fetch updated notification count after marking as read
+//         dispatch(fetchNotificationCount());
+  
+//         return notificationId; // Returning ID to update state
+//       } catch (error) {
+//         return rejectWithValue(error.response?.data?.error || "Failed to mark notification as read");
+//       }
+//     }
+//   );
+// In fetchNotifications thunk
+export const fetchNotifications = createAsyncThunk(
+    "notifications/fetchNotifications",
+    async (_, { rejectWithValue, dispatch }) => {
       try {
-        const response = await axios.put(
-          `${BACKEND_URL}/api/notifications/${notificationId}/read`,
-          {},
-          { withCredentials: true }
-        );
-  
-        // Fetch updated notification count after marking as read
-        dispatch(fetchNotificationCount());
-  
-        return notificationId; // Returning ID to update state
+        const response = await axios.get(`${BACKEND_URL}/api/notifications`, {
+          withCredentials: true,
+        });
+        
+        // Sync the unread count with fetched notifications
+        const unreadCount = response.data.notifications.filter(n => !n.read).length;
+        dispatch(setUnreadCount(unreadCount));
+        
+        return response.data.notifications;
       } catch (error) {
-        return rejectWithValue(error.response?.data?.error || "Failed to mark notification as read");
+        return rejectWithValue(error.response?.data?.error || "Failed to fetch notifications");
       }
     }
   );
-// In fetchNotifications thunk
-
 // Improved socket connection setup
 export const setupNotificationSocket = () => (dispatch) => {
   // Check if we already have a socket and it's connected
@@ -136,7 +153,6 @@ const notificationSlice = createSlice({
     addNotification: (state, action) => {
       state.notifications = [action.payload, ...state.notifications];
     },
-  
     setUnreadCount: (state, action) => {
       state.unreadCount = action.payload;
     },
@@ -162,7 +178,6 @@ const notificationSlice = createSlice({
         state.loading = false;
         state.notifications = action.payload;
       })
-    
       .addCase(fetchNotifications.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;

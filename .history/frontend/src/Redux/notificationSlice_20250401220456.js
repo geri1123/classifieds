@@ -18,20 +18,39 @@ const initialState = {
 };
 
 // Async thunk for fetching notifications
+// export const fetchNotifications = createAsyncThunk(
+//   "notifications/fetchNotifications",
+//   async (_, { rejectWithValue }) => {
+//     try {
+//       const response = await axios.get(`${BACKEND_URL}/api/notifications`, {
+//         withCredentials: true,
+//       });
+//       return response.data.notifications;
+//     } catch (error) {
+//       return rejectWithValue(error.response?.data?.error || "Failed to fetch notifications");
+//     }
+//   }
+// );
 export const fetchNotifications = createAsyncThunk(
-  "notifications/fetchNotifications",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(`${BACKEND_URL}/api/notifications`, {
-        withCredentials: true,
-      });
-      return response.data.notifications;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.error || "Failed to fetch notifications");
+    "notifications/fetchNotifications",
+    async (_, { rejectWithValue, dispatch }) => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/api/notifications`, {
+          withCredentials: true,
+        });
+        
+        // Calculate unread count from the actual notifications
+        const unreadCount = response.data.notifications.filter(n => n.status!==read).length;
+        
+        // Update the unread count based on the fetched notifications
+        dispatch(setUnreadCount(unreadCount));
+        
+        return response.data.notifications;
+      } catch (error) {
+        return rejectWithValue(error.response?.data?.error || "Failed to fetch notifications");
+      }
     }
-  }
-);
-
+  );
 // Async thunk for fetching notification count
 export const fetchNotificationCount = createAsyncThunk(
   "notifications/fetchCount",
@@ -136,7 +155,6 @@ const notificationSlice = createSlice({
     addNotification: (state, action) => {
       state.notifications = [action.payload, ...state.notifications];
     },
-  
     setUnreadCount: (state, action) => {
       state.unreadCount = action.payload;
     },
@@ -162,7 +180,6 @@ const notificationSlice = createSlice({
         state.loading = false;
         state.notifications = action.payload;
       })
-    
       .addCase(fetchNotifications.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
