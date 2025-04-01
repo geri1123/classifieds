@@ -77,7 +77,7 @@ export default function NotificationsPage() {
 
   // Get notifications and unread count
   const { notifications, loading, error } = useSelector((state) => state.notifications);
- const unreadCount = useSelector(state => state.notifications.unreadCount);
+
   useEffect(() => {
     dispatch(fetchNotifications());
   }, [dispatch]);
@@ -90,7 +90,7 @@ export default function NotificationsPage() {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       <h1 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
-        Notifications <span className="text-xl text-gray-500">({unreadCount})</span> 
+        Notifications
       </h1>
 
       {/* Loading State */}
@@ -111,23 +111,23 @@ export default function NotificationsPage() {
                   notification.status === "read" ? "opacity-60" : ""
                 }`}
               >
-                <div className="flex justify-between items-center w-full">
-                  <div className="flex gap-3 items-center">
-                    <GoBellFill />
-                    <p className="text-md text-black dark:text-gray-400">{notification.message}</p>
-                  </div>
-
-                  {/* Status Indicator (Dot) */}
-                  <div className="flex items-center ml-2">
-                    {notification.status === "unread" && (
-                      <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                    )}
-                    {notification.status === "read" && (
-                      <span className="w-2 h-2 bg-green-700 rounded-full"></span>
-                    )}
-                  </div>
+                <div className="flex gap-3 items-center">
+                  
+                  <GoBellFill />
+                  <p className="text-md text-black dark:text-gray-400">
+                    {notification.message}
+                  </p>
+                    {/* Status Indicator */}
+                <div className="flex items-center mt-2">
+                  {notification.status === "unread" && (
+                    <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                  )}
+                  {notification.status === "read" && (
+                    <span className="w-2 h-2 bg-green-700 rounded-full"></span>
+                  )}
                 </div>
-
+                </div>
+                
                 {/* Showing time since notification was created */}
                 <span className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                   {notification.created_at &&
@@ -135,6 +135,8 @@ export default function NotificationsPage() {
                       addSuffix: true,
                     })}
                 </span>
+                
+              
               </li>
             ))}
           </ul>

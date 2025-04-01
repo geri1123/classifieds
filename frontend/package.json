@@ -12,6 +12,7 @@
     "@fontsource/alegreya": "^5.2.5",
     "@reduxjs/toolkit": "^2.6.1",
     "axios": "^1.8.2",
+    "date-fns": "^4.1.0",
     "flag-icons": "^7.3.2",
     "next": "15.2.1",
     "react": "^19.0.0",

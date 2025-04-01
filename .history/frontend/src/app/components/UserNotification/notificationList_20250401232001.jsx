@@ -76,7 +76,7 @@ export default function NotificationsPage() {
   const dispatch = useDispatch();
 
   // Get notifications and unread count
-  const { notifications, loading, error } = useSelector((state) => state.notifications);
+  const { notifications,unreadCount, loading, error } = useSelector((state) => state.notifications);
  const unreadCount = useSelector(state => state.notifications.unreadCount);
   useEffect(() => {
     dispatch(fetchNotifications());
@@ -90,7 +90,7 @@ export default function NotificationsPage() {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       <h1 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
-        Notifications <span className="text-xl text-gray-500">({unreadCount})</span> 
+        Notifications
       </h1>
 
       {/* Loading State */}
