@@ -246,7 +246,7 @@ export default function AddProductAttributes({ formData, setFormData }) {
             </>
         );
     };
-   
+
     return (
         <div>
             {attributes.length > 0 ? (

@@ -224,28 +224,28 @@ export default function AddProductAttributes({ formData, setFormData }) {
         }
     };
 
-    const renderAttributes = () => {
-        const nonCheckboxAttributes = attributes.filter(attr => attr.type.toLowerCase() !== "checkbox");
-        const checkboxAttributes = attributes.filter(attr => attr.type.toLowerCase() === "checkbox");
+    // const renderAttributes = () => {
+    //     const nonCheckboxAttributes = attributes.filter(attr => attr.type.toLowerCase() !== "checkbox");
+    //     const checkboxAttributes = attributes.filter(attr => attr.type.toLowerCase() === "checkbox");
 
-        return (
-            <>
-                {/* Render non-checkbox attributes */}
-                <div className="mb-6">
-                    {nonCheckboxAttributes.map(attribute => renderInputField(attribute))}
-                </div>
+    //     return (
+    //         <>
+    //             {/* Render non-checkbox attributes */}
+    //             <div className="mb-6">
+    //                 {nonCheckboxAttributes.map(attribute => renderInputField(attribute))}
+    //             </div>
                 
-                {/* Render checkbox attributes in a separate section aligned to the right */}
-                {checkboxAttributes.length > 0 && (
-                    <div className="border-t pt-4 mt-4">
-                        <div className="text-right">
-                            {checkboxAttributes.map(attribute => renderInputField(attribute))}
-                        </div>
-                    </div>
-                )}
-            </>
-        );
-    };
+    //             {/* Render checkbox attributes in a separate section aligned to the right */}
+    //             {checkboxAttributes.length > 0 && (
+    //                 <div className="border-t pt-4 mt-4">
+    //                     <div className="text-right">
+    //                         {checkboxAttributes.map(attribute => renderInputField(attribute))}
+    //                     </div>
+    //                 </div>
+    //             )}
+    //         </>
+    //     );
+    // };
    
     return (
         <div>
