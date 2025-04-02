@@ -1,0 +1,29 @@
+export default function SelectInput({ label, name, errors, value, onChange, options, placeholder }) {
+    return (
+        <div className="form-group">
+            <label htmlFor={name} className="block text-gray-700 dark:text-gray-200">
+                {label}
+            </label>
+            <select
+                id={name}
+                name={name}
+                value={value}  // Send the currency name to the backend
+                onChange={onChange}
+                placeholder={placeholder}
+                className={`mt-1 block w-full p-2 border rounded-lg dark:bg-transparent focus:outline-none focus:ring-0 focus:shadow-none 
+                    ${errors ? "border-red-500" : "border-black"}`} 
+            >
+                <option value="" disabled>
+                    {placeholder}
+                </option>
+                {options.map((option) => (
+                    <option key={option.id} value={option.value}>  {/* Send the name of the currency */}
+                        {option.value} {/* Display symbol and name */}
+                    </option>
+                ))}
+
+            </select>
+            {errors && <p className="text-sm text-red-600 ">{errors}</p>}
+        </div>
+    );
+}
