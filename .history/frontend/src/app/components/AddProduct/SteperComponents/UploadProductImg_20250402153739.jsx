@@ -351,7 +351,7 @@ const UploadProductImg = ({ formData, setFormData }) => {
           ))}
         </div>
 
-        <p className="text-gray-800 dark:text-gray-200 mb-2 text-right text-sm">
+        <p className="text-gray-800 dark:text-gray-200 mb-2 text-right text-  p text-sm">
           Uploaded {documents.length}/{MAX_DOCUMENTS} documents
         </p>
 

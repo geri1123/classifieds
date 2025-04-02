@@ -354,11 +354,9 @@ export default function AddProduct() {
                 });
             } else {
                 setErrors(data.errors || "Error submitting product.");
-                window.scrollTo({ top: 0, behavior: 'smooth' }); 
             }
         } catch (error) {
             console.error("Error submitting product:", error);
-            
             alert("Failed to add product.");
         } finally {
             // Reset the appropriate loading state

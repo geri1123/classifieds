@@ -5,10 +5,10 @@ import { MdOutlineSaveAlt } from "react-icons/md";
 import { FaRegChartBar } from "react-icons/fa";
 import { GoBellFill } from "react-icons/go";
 export const userSettings=[
-  {element:'Notifications' , icon:<GoBellFill/> ,path:'/notifications'},
+  {element:'Favourites' , icon:<FiHeart/> ,path:'favourites'},
     {element:'Profile' , icon:<CgProfile/> ,path:'/profile'},
     {element:'Published', icon:<MdOutlineHomeWork/>,path:'/products?category=All'},
-    {element:'Favourites' , icon:<FiHeart/> ,path:'favourites'},
+    
     {element:'Saved', icon:<MdOutlineSaveAlt/>,path:'saved'},
     {element:'Panel' , icon:<FaRegChartBar/>,path:'dashboard'},
     

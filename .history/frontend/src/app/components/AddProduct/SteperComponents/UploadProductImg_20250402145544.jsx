@@ -150,7 +150,7 @@ import { AiOutlineFilePdf } from "react-icons/ai";
 import { BsImage, BsCloudUpload } from "react-icons/bs";
 import { FiFileText } from "react-icons/fi";
 
-const UploadProductImg = ({ formData, setFormData }) => {
+const UploadProductFiles = ({ formData, setFormData }) => {
   const MAX_IMAGES = 10;
   const MAX_DOCUMENTS = 5;
   
@@ -160,12 +160,18 @@ const UploadProductImg = ({ formData, setFormData }) => {
 
   // Initialize from formData if available
   useEffect(() => {
-    if (formData.product_img && formData.product_img.length > 0) {
-      setImages(formData.product_img);
+    if (formData.product_img) {
+      const imgs = formData.product_img.filter(file => file.fileType === 'image');
+      setImages(imgs);
     }
     
-    if (formData.product_doc && formData.product_doc.length > 0) {
-      setDocuments(formData.product_doc);
+    if (formData.product_doc) {
+      const docs = formData.product_doc || [];
+      setDocuments(docs);
+    } else if (formData.product_img) {
+      // Handle case where PDFs might be in product_img from previous implementation
+      const docs = formData.product_img.filter(file => file.fileType === 'document');
+      setDocuments(docs);
     }
   }, []);
 
@@ -182,7 +188,7 @@ const UploadProductImg = ({ formData, setFormData }) => {
   useEffect(() => {
     return () => {
       [...images, ...documents].forEach((file) => {
-        if (file.preview && typeof file.preview === 'string' && !file.isExisting) {
+        if (file.preview && typeof file.preview === 'string') {
           URL.revokeObjectURL(file.preview);
         }
       });
@@ -275,7 +281,7 @@ const UploadProductImg = ({ formData, setFormData }) => {
             <div key={index} className="relative group">
               <div className="md:w-30 md:h-30 w-20 h-20 relative">
                 <img
-                  src={file.preview || file.url} // Support both new uploads and existing files
+                  src={file.preview}
                   alt={`Preview ${index}`}
                   className="w-full h-full object-cover rounded"
                 />
@@ -335,9 +341,7 @@ const UploadProductImg = ({ formData, setFormData }) => {
               <div className="md:w-30 md:h-30 w-20 h-20 flex flex-col items-center justify-center bg-gray-100 rounded">
                 <AiOutlineFilePdf className="text-red-500 text-2xl" />
                 <p className="text-xs text-gray-600 truncate w-full text-center mt-1 px-2">
-                  {(file.name || file.originalname || "Document").length > 12 
-                    ? `${(file.name || file.originalname).substring(0, 12)}...` 
-                    : (file.name || file.originalname || "Document")}
+                  {file.name.length > 12 ? `${file.name.substring(0, 12)}...` : file.name}
                 </p>
               </div>
               
@@ -358,20 +362,20 @@ const UploadProductImg = ({ formData, setFormData }) => {
         <div
           {...getDocumentRootProps()}
           className={`border-2 border-dashed rounded-lg p-6 text-center ${
-            isDocumentDragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 bg-white"
+            isDocumentDragActive ? "border-red-500 bg-red-50" : "border-gray-300 bg-white"
           }`}
         >
           <input {...getDocumentInputProps()} />
-          <BsCloudUpload className="mx-auto text-3xl text-gray-400 mb-2" />
+          <AiOutlineFilePdf className="mx-auto text-3xl text-gray-400 mb-2" />
           {isDocumentDragActive ? (
-            <p className="text-blue-500">Drop the documents here...</p>
+            <p className="text-red-500">Drop the PDF files here...</p>
           ) : (
             <div>
               <p className="text-gray-500">
-                Drag and drop PDF documents here, or click to select
+                Drag and drop PDF files here, or click to select
               </p>
               <p className="text-gray-400 text-sm mt-1">
-                Supported format: PDF
+                Supported format: PDF only
               </p>
             </div>
           )}
@@ -381,4 +385,4 @@ const UploadProductImg = ({ formData, setFormData }) => {
   );
 };
 
-export default UploadProductImg;
+export default UploadProductFiles;

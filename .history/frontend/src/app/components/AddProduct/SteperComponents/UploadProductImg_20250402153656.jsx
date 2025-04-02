@@ -351,34 +351,4 @@ const UploadProductImg = ({ formData, setFormData }) => {
           ))}
         </div>
 
-        <p className="text-gray-800 dark:text-gray-200 mb-2 text-right text-sm">
-          Uploaded {documents.length}/{MAX_DOCUMENTS} documents
-        </p>
-
-        <div
-          {...getDocumentRootProps()}
-          className={`border-2 border-dashed rounded-lg p-6 text-center ${
-            isDocumentDragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 bg-white"
-          }`}
-        >
-          <input {...getDocumentInputProps()} />
-          <BsCloudUpload className="mx-auto text-3xl text-gray-400 mb-2" />
-          {isDocumentDragActive ? (
-            <p className="text-blue-500">Drop the documents here...</p>
-          ) : (
-            <div>
-              <p className="text-gray-500">
-                Drag and drop PDF documents here, or click to select
-              </p>
-              <p className="text-gray-400 text-sm mt-1">
-                Supported format: PDF
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default UploadProductImg;
+        <p className="text-gray-800 dark:text-gray-200 mb-2 text-right text-

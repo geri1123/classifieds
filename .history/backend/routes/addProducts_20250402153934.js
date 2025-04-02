@@ -561,6 +561,9 @@ router.put("/update-product-status/:id", verifyToken, async (req, res) => {
   }
 });
 
+
+
+
 router.delete("/delete-product/:id", verifyToken, async (req, res) => {
   const productId = req.params.id;
   const userId = req.userId;
@@ -570,41 +573,28 @@ router.delete("/delete-product/:id", verifyToken, async (req, res) => {
   try {
     await connection.beginTransaction(); // Start transaction
 
-    // 1. Fetch product images
-    const [images] = await connection.query(
+    // 1. Fetch product files (images and documents)
+    const [files] = await connection.query(
       "SELECT image_url FROM product_images WHERE product_id = ?",
       [productId]
     );
 
-    // 2. Fetch product documents
-    const [documents] = await connection.query(
-      "SELECT document_url FROM product_documents WHERE product_id = ?",
-      [productId]
-    );
+    // 2. Delete files from the filesystem
+    for (const file of files) {
+      const filePath = path.join(__dirname, "../", file.image_url); // Resolve full path
 
-    // 3. Delete files from the filesystem
-    const allFiles = [
-      ...images.map(img => img.image_url),
-      ...documents.map(doc => doc.document_url)
-    ];
-
-    for (const fileUrl of allFiles) {
-      const filePath = path.join(__dirname, "../", fileUrl); // Resolve full path
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath); // Delete the file
       }
     }
 
-    // 4. Delete product images from the database
+    // 3. Delete product images/documents from the database
     await connection.query("DELETE FROM product_images WHERE product_id = ?", [productId]);
 
-    // 5. Delete product documents from the database
-    await connection.query("DELETE FROM product_documents WHERE product_id = ?", [productId]);
-
-    // 6. Delete product attributes (if any exist)
+    // 4. Delete product attributes (if any exist)
     await connection.query("DELETE FROM product_attributes WHERE product_id = ?", [productId]);
 
-    // 7. Delete the product itself (ensure user owns it)
+    // 5. Delete the product itself (ensure user owns it)
     const [result] = await connection.query(
       "DELETE FROM products WHERE id = ? AND user_id = ?",
       [productId, userId]
@@ -628,61 +618,5 @@ router.delete("/delete-product/:id", verifyToken, async (req, res) => {
     connection.release(); // Release the connection
   }
 });
-
-
-// router.delete("/delete-product/:id", verifyToken, async (req, res) => {
-//   const productId = req.params.id;
-//   const userId = req.userId;
-
-//   const connection = await promisePool.getConnection();
-
-//   try {
-//     await connection.beginTransaction(); // Start transaction
-
-//     // 1. Fetch product files (images and documents)
-//     const [files] = await connection.query(
-//       "SELECT image_url FROM product_images WHERE product_id = ?",
-//       [productId]
-//     );
-
-//     // 2. Delete files from the filesystem
-//     for (const file of files) {
-//       const filePath = path.join(__dirname, "../", file.image_url); // Resolve full path
-
-//       if (fs.existsSync(filePath)) {
-//         fs.unlinkSync(filePath); // Delete the file
-//       }
-//     }
-
-//     // 3. Delete product images/documents from the database
-//     await connection.query("DELETE FROM product_images WHERE product_id = ?", [productId]);
-
-//     // 4. Delete product attributes (if any exist)
-//     await connection.query("DELETE FROM product_attributes WHERE product_id = ?", [productId]);
-
-//     // 5. Delete the product itself (ensure user owns it)
-//     const [result] = await connection.query(
-//       "DELETE FROM products WHERE id = ? AND user_id = ?",
-//       [productId, userId]
-//     );
-
-//     if (result.affectedRows === 0) {
-//       throw new Error("Unauthorized or product not found");
-//     }
-
-//     await connection.commit(); // Commit transaction
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Product and all associated files deleted successfully",
-//     });
-//   } catch (error) {
-//     await connection.rollback(); // Rollback transaction if anything fails
-//     console.error("Error deleting product:", error);
-//     res.status(500).json({ error: "Failed to delete product" });
-//   } finally {
-//     connection.release(); // Release the connection
-//   }
-// });
 
 module.exports = router;
