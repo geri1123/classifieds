@@ -1,33 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 
 export default function ProductCard({ product }) {
-  const [hovered, setHovered] = useState(false);
-
-  const hasSecondImage = product.images && product.images.length > 1;
-  const firstImage =
-    product.images && product.images.length > 0
-      ? product.images[0]
-      : "/images/OIP.jpg";
-  const secondImage = hasSecondImage ? product.images[1] : firstImage;
+  const firstImage = product.images && product.images.length > 0 
+    ? product.images[0] 
+    : "https://via.placeholder.com/300x200?text=No+Image";
 
   return (
-    <div
-      className="border rounded-lg shadow-lg p-4 transition duration-300"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <div className="border rounded-lg shadow-lg p-4">
       {/* Product Image */}
       <img
-        src={hovered && hasSecondImage ? secondImage : firstImage}
+        src={firstImage}
         alt={product.title}
-        className="w-full h-40 object-cover rounded-md transition duration-300"
+        className="w-full h-40 object-cover rounded-md"
       />
 
       {/* Product Details */}
-      <h2 className="text-lg font-semibold mt-2 w-full truncate">{product.title}</h2>
-
+      <h2 className="text-lg font-semibold mt-2">{product.title}</h2>
+      
       <div className="flex flex-wrap gap-1 text-xs text-gray-600 mb-2">
         <span>{product.category_name}</span>
         {product.subcategory_name && (

@@ -21,7 +21,7 @@ try {
         <div className="grid grid-cols-5 gap-4">
           {products && products.map(product => (
  
-            <ProductCard key={product.id} product={product}/>
+            <ProductCard product={product}/>
 ))}
         </div>
     )

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../db/dbconfig");
+
 router.get("/products", async (req, res) => {
   const { category } = req.query;
 
@@ -34,31 +35,18 @@ router.get("/products", async (req, res) => {
       queryParams.push(category);
     }
 
+    // Group by product ID to handle multiple images
     query += ` GROUP BY p.id ORDER BY p.created_at DESC`;
 
     const [results] = await promisePool.query(query, queryParams);
 
+    // Process the results to convert comma-separated images to an array
     const processedResults = results.map((product) => {
-      const baseImageUrl = "http://localhost:8081";
-      let images = [];
-
-      if (product.images) {
-        images = product.images
-          .split(',')
-          .slice(0, 2) // Only keep first 2 images
-          .map((url) => `${baseImageUrl}${url}`);
-      }
-
-      // If no images found, use placeholders
-      if (images.length === 0) {
-        images = [
-          "https://via.placeholder.com/300x200?text=No+Image"
-        ];
-      }
-
       return {
         ...product,
-        images
+        images: product.images 
+          ? product.images.split(',').map((url) => `http://localhost:8081${url}`)
+          : []
       };
     });
 
@@ -76,7 +64,6 @@ router.get("/products", async (req, res) => {
     });
   }
 });
-
 
 
 

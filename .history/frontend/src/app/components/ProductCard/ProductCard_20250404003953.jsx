@@ -9,7 +9,7 @@ export default function ProductCard({ product }) {
   const firstImage =
     product.images && product.images.length > 0
       ? product.images[0]
-      : "/images/OIP.jpg";
+      : "https://via.placeholder.com/300x200?text=No+Image";
   const secondImage = hasSecondImage ? product.images[1] : firstImage;
 
   return (

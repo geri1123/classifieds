@@ -1,4 +1,4 @@
-import ProductCard from "@/components/ProductCard/ProductCard";
+
 export default async function ProductPage(){
   let products = [];
 
@@ -18,10 +18,12 @@ try {
 }
 
     return(
-        <div className="grid grid-cols-5 gap-4">
+        <div>
           {products && products.map(product => (
- 
-            <ProductCard key={product.id} product={product}/>
+  <div key={product.id}>
+    <h1>{product.category_name}</h1>
+    <p>{product.title}</p>
+  </div>
 ))}
         </div>
     )

@@ -9,7 +9,7 @@ export default function ProductCard({ product }) {
   const firstImage =
     product.images && product.images.length > 0
       ? product.images[0]
-      : "/images/OIP.jpg";
+      : "https://via.placeholder.com/300x200?text=No+Image";
   const secondImage = hasSecondImage ? product.images[1] : firstImage;
 
   return (
@@ -26,7 +26,7 @@ export default function ProductCard({ product }) {
       />
 
       {/* Product Details */}
-      <h2 className="text-lg font-semibold mt-2 w-full truncate">{product.title}</h2>
+      <h2 className="text-lg font-semibold mt-2 w-full">{product.title}</h2>
 
       <div className="flex flex-wrap gap-1 text-xs text-gray-600 mb-2">
         <span>{product.category_name}</span>

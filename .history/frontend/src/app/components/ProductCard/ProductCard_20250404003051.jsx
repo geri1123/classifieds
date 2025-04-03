@@ -1,0 +1,45 @@
+"use client";
+
+import React from "react";
+
+export default function ProductCard({ product }) {
+  
+
+  return (
+    <div className="border rounded-lg shadow-lg p-4">
+      {/* Product Image */}
+      <img
+        src={product.product_images && product.product_images.length > 0 ? product.product_images : "/placeholder.jpg"}
+        alt={product.product_images && product.product_images.length > 0 ? product.product_images : "Placeholder image"}
+        className="w-full h-40 object-cover rounded-md"
+      />
+      {/* Product Details */}
+      <h2 className="text-lg font-semibold mt-2">{product.title}</h2>
+      <div className="flex flex-wrap gap-1 text-xs text-gray-600 mb-2">
+        <span>{product.category_name}</span>
+        {product.subcategory_name && (
+          <>
+            <span>&gt;</span>
+            <span>{product.subcategory_name}</span>
+          </>
+        )}
+        {product.subcategory_item_name && (
+          <>
+            <span>&gt;</span>
+            <span>{product.subcategory_item_name}</span>
+          </>
+        )}
+      </div>
+      <p className="text-gray-900 font-bold mb-3">
+        {product.price} {product.currency}
+      </p>
+      
+      {/* Product Attributes */}
+     
+        ) : (
+          <p className="text-gray-500 text-sm">No specifications available</p>
+        )}
+      </div>
+    </div>
+  );
+}
