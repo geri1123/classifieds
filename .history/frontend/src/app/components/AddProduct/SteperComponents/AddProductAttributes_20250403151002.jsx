@@ -619,7 +619,7 @@ export default function AddProductAttributes({ formData, setFormData }) {
             );
         } else {
             return (
-                <div key={`attribute-field-${attribute.id}`} className="max-w-100 mb-2">
+                <div key={`attribute-field-${attribute.id}`} className="max-w-100 mb-3">
                     <InputField
                         label={attribute.name}
                         type={attribute.type === "number" ? "number" : "text"}

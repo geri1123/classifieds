@@ -217,13 +217,13 @@ export default function SelectCategory({ formData, changeHandler, setFormData })
                         <h3 className="text-lg font-semibold mb-2">Select Subcategory Item</h3>
                         
                         {/* Search input */}
-                        <div className="mb-4 max-w-100">
+                        <div className="mb-4">
                             <input
                                 type="text"
                                 placeholder="Search subcategory items..."
                                 value={searchTerm}
                                 onChange={handleSearchChange}
-                                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-0 focus:outline-none focus:border-yellow-400"
+                                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-yellow-400"
                             />
                         </div>
                         

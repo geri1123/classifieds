@@ -125,10 +125,10 @@ export default function AddProduct() {
                     country:'',
                     city:'',
                     address:'',
-                    user_firstname:user?.first_name ||'',
-                    user_lastname:user?.last_name ||'',
-                    user_email:user?.email ||'',
-                    user_phone:user?.phone || '',
+                    // user_firstname:user?.first_name ||'',
+                    // user_lastname:user?.last_name ||'',
+                    // user_email:user?.email ||'',
+                    // user_phone:user?.phone || '',
                     status_type: 'published',
                 });
             } else {

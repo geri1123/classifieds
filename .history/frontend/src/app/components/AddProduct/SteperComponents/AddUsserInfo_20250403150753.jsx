@@ -25,7 +25,7 @@ export default function AddUserInfo ({ errors, formData,changeHandler}){
             </div>
             <div className="form-group max-w-100">
                 <InputField
-                    label={<span>Email <span className="text-red-500">*</span></span>}
+                    label={<span>Email </span>}
                     name="user_email"
                     value={formData.user_email}
                     onChange={changeHandler}

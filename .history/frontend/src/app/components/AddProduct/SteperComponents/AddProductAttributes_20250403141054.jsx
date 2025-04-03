@@ -554,7 +554,24 @@ export default function AddProductAttributes({ formData, setFormData }) {
         }));
     };
 
-   
+    // const handleCheckboxChange = (e, attributeId, attributeValueName) => {
+    //     const { checked } = e.target;
+    
+    //     setFormData((prevData) => {
+    //         const prevSelected = prevData.attributes?.[attributeId] || []; // Get existing selected values (default to empty array)
+    //         let updatedValues = checked
+    //             ? [...prevSelected, attributeValueName] // Add new value if checked
+    //             : prevSelected.filter(value => value !== attributeValueName); // Remove value if unchecked
+    
+    //         return {
+    //             ...prevData,
+    //             attributes: {
+    //                 ...prevData.attributes,
+    //                 [attributeId]: updatedValues,
+    //             },
+    //         };
+    //     });
+    // };
     const handleCheckboxChange = (e, attributeId, attributeValueName) => {
         const { checked } = e.target;
     
@@ -582,7 +599,7 @@ export default function AddProductAttributes({ formData, setFormData }) {
             const isLoading = attributeValuesLoading[attribute.id];
 
             return (
-                <div key={`attribute-field-${attribute.id}`} className="max-w-40 mb-2">
+                <div key={`attribute-field-${attribute.id}`} className="max-w-40">
                     <SelectInput
                         label={attribute.name}
                         name={`attribute-${attribute.id}`}
@@ -619,7 +636,7 @@ export default function AddProductAttributes({ formData, setFormData }) {
             );
         } else {
             return (
-                <div key={`attribute-field-${attribute.id}`} className="max-w-100 mb-2">
+                <div key={`attribute-field-${attribute.id}`} className="max-w-100">
                     <InputField
                         label={attribute.name}
                         type={attribute.type === "number" ? "number" : "text"}

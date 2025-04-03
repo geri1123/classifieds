@@ -330,7 +330,7 @@ const processUserInfo = (body) => {
   if (!user_firstname) errors.firstName = "First name is required.";
   if (!user_lastname) errors.lastName = "Last name is required.";
   if (!user_email) errors.email = "Email is required.";
-  
+  // if (!user_phone) errors.phone = "Phone is required.";
   
   return { errors, user_firstname, user_lastname, user_email, user_phone };
 };

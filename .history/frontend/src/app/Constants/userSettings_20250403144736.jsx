@@ -7,12 +7,12 @@ import { MdOutlineAddCircleOutline } from "react-icons/md";
 
 import { GoBellFill } from "react-icons/go";
 export const userSettings=[
-  {element:'Notifications' , icon:<GoBellFill/> ,path:'/MyPortal/notifications'},
-    {element:'Profile' , icon:<CgProfile/> ,path:'/MyPortal/profile'},
+  {element:'Notifications' , icon:<GoBellFill/> ,path:'/MyPortal//notifications'},
+    {element:'Profile' , icon:<CgProfile/> ,path:'/MyPortal//profile'},
     {element:'Your Products', icon:<MdOutlineHomeWork/>,path:'/MyPortal//products?category=All'},
     {element:'Post an Add' , icon:<MdOutlineAddCircleOutline/> ,path:'/Post'},
-    {element:'Favourites' , icon:<FiHeart/> ,path:'/MyPortal/favourites'},
-    {element:'Saved', icon:<MdOutlineSaveAlt/>,path:'/MyPortal/saved'},
+    {element:'Favourites' , icon:<FiHeart/> ,path:'favourites'},
+    {element:'Saved', icon:<MdOutlineSaveAlt/>,path:'saved'},
     // {element:'Panel' , icon:<FaRegChartBar/>,path:'dashboard'},
     
   ]

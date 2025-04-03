@@ -12,7 +12,7 @@ export const userSettings=[
     {element:'Your Products', icon:<MdOutlineHomeWork/>,path:'/MyPortal//products?category=All'},
     {element:'Post an Add' , icon:<MdOutlineAddCircleOutline/> ,path:'/Post'},
     {element:'Favourites' , icon:<FiHeart/> ,path:'/MyPortal/favourites'},
-    {element:'Saved', icon:<MdOutlineSaveAlt/>,path:'/MyPortal/saved'},
+    {element:'Saved', icon:<MdOutlineSaveAlt/>,path:'saved'},
     // {element:'Panel' , icon:<FaRegChartBar/>,path:'dashboard'},
     
   ]

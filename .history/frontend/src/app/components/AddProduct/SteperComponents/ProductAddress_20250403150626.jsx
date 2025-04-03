@@ -94,7 +94,7 @@ export default function ProductAddress({ formData, changeHandler, errors }) {
             {/* Country Select Input */}
             <div className="max-w-100">
                 <SelectInput
-                      label={<span>Country <span className="text-red-500">*</span></span>}
+                    label="Country"
                     value={formData.country || ''}
                     onChange={changeHandler}
                     name="country"
@@ -107,7 +107,7 @@ export default function ProductAddress({ formData, changeHandler, errors }) {
             {/* City Select Input */}
             <div className="max-w-100">
                 <SelectInput
-                      label={<span>City <span className="text-red-500">*</span></span>}
+                    label="City"
                     value={formData.city || ""}
                     onChange={changeHandler}
                     name="city"

@@ -330,7 +330,7 @@ const processUserInfo = (body) => {
   if (!user_firstname) errors.firstName = "First name is required.";
   if (!user_lastname) errors.lastName = "Last name is required.";
   if (!user_email) errors.email = "Email is required.";
-  
+  // if (!user_phone) errors.phone = "Phone is required.";
   
   return { errors, user_firstname, user_lastname, user_email, user_phone };
 };
@@ -461,43 +461,43 @@ router.post("/add-product", verifyToken, upload.array("files", 20), async (req, 
     }
 
     // Add product attributes
-    if (req.body.attributes && typeof req.body.attributes === "object") {
-      const attributes = Object.entries(req.body.attributes).map(([attribute_id, value]) => [
-        productId,
-        attribute_id,
-        value,
-      ]);
+    // if (req.body.attributes && typeof req.body.attributes === "object") {
+    //   const attributes = Object.entries(req.body.attributes).map(([attribute_id, value]) => [
+    //     productId,
+    //     attribute_id,
+    //     value,
+    //   ]);
 
-      if (attributes.length > 0) {
-        await connection.query(
-          "INSERT INTO product_attributes (product_id, attribute_id, value) VALUES ?",
-          [attributes]
-        );
+    //   if (attributes.length > 0) {
+    //     await connection.query(
+    //       "INSERT INTO product_attributes (product_id, attribute_id, value) VALUES ?",
+    //       [attributes]
+    //     );
+    //   }
+    // }
+    if (req.body.attributes && typeof req.body.attributes === "object") {
+      const attributes = [];
+  
+      // Iterate over the attributes and process checkbox values as separate entries
+      for (const [attribute_id, values] of Object.entries(req.body.attributes)) {
+          if (Array.isArray(values)) {
+              // For checkbox attributes, insert each selected value as a separate row
+              values.forEach(value => {
+                  attributes.push([productId, attribute_id, value]);
+              });
+          } else {
+              // For non-checkbox attributes, insert a single value
+              attributes.push([productId, attribute_id, values]);
+          }
       }
-    }
-  //   if (req.body.attributes && typeof req.body.attributes === "object") {
-  //     const attributes = [];
   
-  //     // Iterate over the attributes and process checkbox values as separate entries
-  //     for (const [attribute_id, values] of Object.entries(req.body.attributes)) {
-  //         if (Array.isArray(values)) {
-  //             // For checkbox attributes, insert each selected value as a separate row
-  //             values.forEach(value => {
-  //                 attributes.push([productId, attribute_id, value]);
-  //             });
-  //         } else {
-  //             // For non-checkbox attributes, insert a single value
-  //             attributes.push([productId, attribute_id, values]);
-  //         }
-  //     }
-  
-  //     if (attributes.length > 0) {
-  //         await connection.query(
-  //             "INSERT INTO product_attributes (product_id, attribute_id, value) VALUES ?",
-  //             [attributes]
-  //         );
-  //     }
-  // }
+      if (attributes.length > 0) {
+          await connection.query(
+              "INSERT INTO product_attributes (product_id, attribute_id, value) VALUES ?",
+              [attributes]
+          );
+      }
+  }
     await connection.commit(); // Commit transaction
 
     // Notification message
