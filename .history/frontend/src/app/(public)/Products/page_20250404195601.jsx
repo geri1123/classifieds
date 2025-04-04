@@ -1,0 +1,77 @@
+// import ProductCard from "@/components/ProductCard/ProductCard";
+// export default async function ProductPage(){
+//   let products = [];
+
+// try {
+//   const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/products`, {
+//     cache: "no-store",
+//   });
+
+//   if (!response.ok) {
+//     throw new Error("Failed to fetch products");
+//   }
+
+//   const data = await response.json();
+//   products = data.products || data; 
+// } catch (error) {
+//   console.error("Error loading products:", error);
+// }
+
+//     return(
+//         <div className="grid grid-cols-5 gap-4">
+//           {products && products.map(product => (
+ 
+//             <ProductCard key={product.id} product={product}/>
+// ))}
+//         </div>
+//     )
+
+// }
+
+import ProductCard from "@/components/ProductCard/ProductCard";
+
+export default async function ProductPage() {
+  let products = [];
+  
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/products`, {
+      cache: "no-store",
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch products: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    products = Array.isArray(data) ? data : data.products || [];
+    
+    // Log for debugging
+    console.log(`Fetched ${products.length} products`);
+    if (products.length > 0) {
+      console.log("First product sample:", {
+        id: products[0].id,
+        title: products[0].title,
+        hasImages: products[0].images?.length > 0,
+        hasAttributes: products[0].attributes?.length > 0
+      });
+    }
+  } catch (error) {
+    console.error("Error loading products:", error);
+  }
+  
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Products</h1>
+      
+      {products.length === 0 ? (
+        <div className="text-center py-10">No products found</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {products.map(product => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
